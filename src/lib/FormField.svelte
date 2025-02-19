@@ -98,7 +98,7 @@
           </div>
         {/each}
         <button
-          class="flex items-center space-x-2 text-blue-500 hover:text-blue-600"
+          class="cursor-pointer flex items-center space-x-2 text-blue-500 hover:text-blue-600"
           on:click={addOption}
         >
           <Icon icon="material-symbols:add-circle-outline" />

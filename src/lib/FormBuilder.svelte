@@ -246,7 +246,7 @@
                 <input
                   type="text"
                   id={`${field.id}_first`}
-                  class="w-full p-2 border rounded-md cursor-pointer"
+                  class="w-full p-2 border rounded-md"
                   placeholder="First name"
                   required={field.required}
                   bind:value={formResponses[`${field.id}_first`]}
@@ -254,7 +254,7 @@
                 <input
                   type="text"
                   id={`${field.id}_last`}
-                  class="w-full p-2 border rounded-md cursor-pointer"
+                  class="w-full p-2 border rounded-md"
                   placeholder="Last name"
                   required={field.required}
                   bind:value={formResponses[`${field.id}_last`]}
@@ -266,7 +266,7 @@
                 <input
                   type="tel"
                   id={field.id}
-                  class="w-full p-2 pl-12 border rounded-md cursor-pointer"
+                  class="w-full p-2 pl-12 border rounded-md"
                   pattern="[0-9]{10}"
                   placeholder="9XX XXX XXXX"
                   required={field.required}
@@ -279,7 +279,7 @@
                 <input
                   type="number"
                   id={field.id}
-                  class="w-full p-2 pl-8 border rounded-md cursor-pointer"
+                  class="w-full p-2 pl-8 border rounded-md"
                   placeholder="0.00"
                   step="0.01"
                   required={field.required}
@@ -318,6 +318,17 @@
                   </label>
                 {/each}
               </div>
+              {:else if field.type === 'dropdown'}
+  <select 
+    id={field.id} 
+    class="w-full p-2 border rounded-md"
+    required={field.required}
+    bind:value={formResponses[field.id]}
+  >
+    {#each field.options || [] as option}
+      <option value={option}>{option}</option>
+    {/each}
+  </select>
             {:else if field.type === 'region'}
               <select
                 id={field.id}
@@ -352,7 +363,7 @@
                       field.type === 'date' ? 'date' :
                       field.type === 'time' ? 'time' :
                       field.type === 'file' ? 'file' : 'text'}
-                class="w-full p-2 border rounded-md cursor-pointer"
+                class="w-full p-2 border rounded-md "
                 required={field.required}
                 bind:value={formResponses[field.id]}
                 placeholder={field.description}
