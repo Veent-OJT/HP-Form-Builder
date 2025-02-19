@@ -54,13 +54,18 @@
       </div>
       <div class="flex space-x-2">
         <button
-          class="p-2 text-gray-500 hover:text-gray-700"
+          class="p-2 text-gray-500 hover:text-gray-700 cursor-pointer relative group"
           on:click={() => updateField({ required: !field.required })}
+          title={field.required ? "Required field" : "Optional field"}
         >
-          <Icon icon={field.required ? "material-symbols:star" : "material-symbols:star-outline"} />
+          <Icon 
+            icon={field.required ? "material-symbols:error" : "material-symbols:error-outline"} 
+            class={field.required ? "text-red-500" : "text-gray-400"}
+          />
+          <span class="sr-only">{field.required ? "Required field" : "Optional field"}</span>
         </button>
         <button
-          class="p-2 text-gray-500 hover:text-red-500"
+          class="p-2 text-gray-500 hover:text-red-500 cursor-pointer"
           on:click={() => dispatch('delete')}
         >
           <Icon icon="material-symbols:delete-outline" />
