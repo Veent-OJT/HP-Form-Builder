@@ -48,7 +48,7 @@
 		{ type: 'dropdown', label: 'Dropdown', icon: 'material-symbols:arrow-drop-down-circle' },
 		{ type: 'file', label: 'File Upload', icon: 'material-symbols:upload-file' },
 		{ type: 'name', label: 'Name', icon: 'material-symbols:person' },
-		{ type: 'price', label: 'Price', icon: 'material-symbols:payments' },
+		// { type: 'price', label: 'Price', icon: 'material-symbols:payments' },
 		{ type: 'time', label: 'Time', icon: 'material-symbols:schedule' },
 		{ type: 'region', label: 'Region & City', icon: 'material-symbols:location-on' }
 	];
@@ -188,15 +188,13 @@
 	<div class="rounded-lg bg-white p-6 shadow-lg">
 		{#if !isPreviewMode}
 			<!-- Builder Mode -->
-			<h1>Registration prompt text</h1>
 			<input
 				class="mb-2 w-full border-b-2 border-transparent p-2 text-3xl font-bold focus:border-blue-500 focus:outline-none"
 				placeholder="Form Title"
-				bind:value={formData.title}
+				
 			/>
 			<textarea
 				class="mb-6 w-full border-b-2 border-transparent p-2 focus:border-blue-500 focus:outline-none"
-				bind:value={formData.description}
 				placeholder="Form Description"
 			></textarea>
 
@@ -385,7 +383,7 @@
 				<div class="mt-6 flex justify-end space-x-4">
 					<button
 						type="submit"
-						class="cursor-pointer rounded-md bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
+						class="cursor-pointer rounded-md bg-[#0ca777] px-4 py-2 text-white hover:bg-[#36c294]"
 					>
 						Submit
 					</button>
@@ -396,7 +394,7 @@
 		<!-- Toggle Button -->
 		<div class="mt-6 flex justify-end">
 			<button
-				class="cursor-pointer rounded-md bg-green-500 px-4 py-2 text-white hover:bg-green-600"
+				class="cursor-pointer rounded-md bg-[#d12f2b] px-4 py-2 text-white hover:bg-[#a62421]"
 				on:click={togglePreview}
 			>
 				{isPreviewMode ? 'Back to Editor' : 'Preview Form'}
