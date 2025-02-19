@@ -52,11 +52,13 @@
     interface Region {
       id: string;
       name: string;
+      code: any;
     }
 
     interface City {
       id: string;
       name: string;
+      code: any;
     }
 
     let regions: Region[] = [];
@@ -73,13 +75,16 @@
     }
 
     async function fetchCities(regionCode: string) {
-      try {
+    try {
         const response = await fetch(`https://psgc.gitlab.io/api/regions/${regionCode}/cities-municipalities/`);
         cities[regionCode] = await response.json();
-      } catch (error) {
+        console.log("Fetched cities:", cities[regionCode]);
+    } catch (error) {
         console.error('Error fetching cities:', error);
-      }
     }
+}
+
+
 
     function addField(type: FieldType) {
       if (type === 'region') {
@@ -151,24 +156,25 @@
     });
 
     async function handleRegionChange(event: Event, fieldId: string) {
-      const regionName = (event.target as HTMLSelectElement).value;
-      const region = regions.find(r => r.name === regionName);
-      if (region) {
-        await fetchCities(region.id);
-        
-        const cityField = formData.fields.find(f => 
-          f.type === 'city' && 
-          formData.fields.findIndex(rf => rf.type === 'region' && rf.id === fieldId) < formData.fields.indexOf(f)
-        );
+    const regionName = (event.target as HTMLSelectElement).value;
+    const region = regions.find(r => r.name === regionName);
+    if (region) {
+        console.log(region)
+        await fetchCities(region.code);
+        formData.fields = formData.fields.map(f => {
+            if (f.type === 'city') {
+                return {
+                    ...f,
+                    options: cities[region.code]?.map(city => city.name) || []
+                };
+            }
+            return f;
+        });
 
-        if (cityField) {
-          updateField({
-            ...cityField,
-            options: cities[region.id]?.map(city => city.name) || []
-          });
-        }
-      }
+        console.log("Updated form fields:", formData.fields);
     }
+}
+
 </script>
   
 <div class="max-w-4xl mx-auto p-4">
