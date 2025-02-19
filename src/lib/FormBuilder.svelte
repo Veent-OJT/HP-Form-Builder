@@ -32,7 +32,7 @@
       ]
     };
   
-    const fieldTypes: { type: FieldType; label: string; icon: string }[] = [
+    let fieldTypes: { type: FieldType; label: string; icon: string }[] = [
       { type: 'shortText', label: 'Short Text', icon: 'material-symbols:short-text' },
       { type: 'longText', label: 'Long Text', icon: 'material-symbols:text-fields' },
       { type: 'email', label: 'Email', icon: 'material-symbols:mail-outline' },
@@ -46,18 +46,77 @@
       { type: 'name', label: 'Name', icon: 'material-symbols:person' },
       { type: 'price', label: 'Price', icon: 'material-symbols:payments' },
       { type: 'time', label: 'Time', icon: 'material-symbols:schedule' },
-      { type: 'address', label: 'Address', icon: 'material-symbols:location-on' },
+      { type: 'region', label: 'Region & City', icon: 'material-symbols:location-on' },
     ];
   
+    interface Region {
+      id: string;
+      name: string;
+    }
+
+    interface City {
+      id: string;
+      name: string;
+    }
+
+    let regions: Region[] = [];
+    let cities: Record<string, City[]> = {};
+    let selectedRegion = '';
+
+    async function fetchRegions() {
+      try {
+        const response = await fetch('https://psgc.gitlab.io/api/regions/');
+        regions = await response.json();
+      } catch (error) {
+        console.error('Error fetching regions:', error);
+      }
+    }
+
+    async function fetchCities(regionCode: string) {
+      try {
+        const response = await fetch(`https://psgc.gitlab.io/api/regions/${regionCode}/cities-municipalities/`);
+        cities[regionCode] = await response.json();
+      } catch (error) {
+        console.error('Error fetching cities:', error);
+      }
+    }
+
     function addField(type: FieldType) {
-      const newField: FormFieldTypes = {
-        id: crypto.randomUUID(),
-        type,
-        label: `New ${type} field`,
-        required: false,
-        options: type === 'multipleChoice' || type === 'checkbox' || type === 'dropdown' ? ['Option 1'] : undefined
-      };
-      formData.fields = [...formData.fields, newField];
+      if (type === 'region') {
+        formData.fields = [...formData.fields, 
+          {
+            id: crypto.randomUUID(),
+            type: 'region',
+            label: 'Region',
+            required: true,
+            options: regions.map(region => region.name)
+          },
+          {
+            id: crypto.randomUUID(),
+            type: 'city',
+            label: 'City/Municipality',
+            required: true,
+            options: []
+          },
+          {
+            id: crypto.randomUUID(),
+            type: 'shortText',
+            label: 'Street/Barangay',
+            required: true
+          }
+        ];
+        
+        fieldTypes = fieldTypes.filter(ft => ft.type !== 'region');
+      } else {
+        const newField: FormFieldTypes = {
+          id: crypto.randomUUID(),
+          type,
+          label: `New ${type} field`,
+          required: false,
+          options: type === 'multipleChoice' || type === 'checkbox' || type === 'dropdown' ? ['Option 1'] : undefined
+        };
+        formData.fields = [...formData.fields, newField];
+      }
     }
   
     function handleDnd(e: CustomEvent<{ items: FormFieldTypes[] }>) {
@@ -84,6 +143,31 @@
     function handleSubmit() {
       console.log('Form responses:', formResponses);
       alert("submitted")
+    }
+
+    import { onMount } from 'svelte';
+    onMount(() => {
+      fetchRegions();
+    });
+
+    async function handleRegionChange(event: Event, fieldId: string) {
+      const regionName = (event.target as HTMLSelectElement).value;
+      const region = regions.find(r => r.name === regionName);
+      if (region) {
+        await fetchCities(region.id);
+        
+        const cityField = formData.fields.find(f => 
+          f.type === 'city' && 
+          formData.fields.findIndex(rf => rf.type === 'region' && rf.id === fieldId) < formData.fields.indexOf(f)
+        );
+
+        if (cityField) {
+          updateField({
+            ...cityField,
+            options: cities[region.id]?.map(city => city.name) || []
+          });
+        }
+      }
     }
 </script>
   
@@ -141,7 +225,10 @@
 
         {#each formData.fields as field (field.id)}
           <div class="space-y-2">
-            <label class="block text-sm font-medium text-gray-700">
+            <label 
+              for={field.id} 
+              class="block text-sm font-medium text-gray-700"
+            >
               {field.label}
               {#if field.required}
                 <span class="text-red-500">*</span>
@@ -152,74 +239,116 @@
               <div class="grid grid-cols-2 gap-4">
                 <input
                   type="text"
-                  class="w-full p-2 border rounded-md"
+                  id={`${field.id}_first`}
+                  class="w-full p-2 border rounded-md cursor-pointer"
                   placeholder="First name"
                   required={field.required}
                   bind:value={formResponses[`${field.id}_first`]}
                 />
                 <input
                   type="text"
-                  class="w-full p-2 border rounded-md"
+                  id={`${field.id}_last`}
+                  class="w-full p-2 border rounded-md cursor-pointer"
                   placeholder="Last name"
                   required={field.required}
                   bind:value={formResponses[`${field.id}_last`]}
                 />
               </div>
+            {:else if field.type === 'phone'}
+              <div class="relative">
+                <span class="absolute left-3 top-2">+63</span>
+                <input
+                  type="tel"
+                  id={field.id}
+                  class="w-full p-2 pl-12 border rounded-md cursor-pointer"
+                  pattern="[0-9]{10}"
+                  placeholder="9XX XXX XXXX"
+                  required={field.required}
+                  bind:value={formResponses[field.id]}
+                />
+              </div>
+            {:else if field.type === 'price'}
+              <div class="relative">
+                <span class="absolute left-3 top-2">₱</span>
+                <input
+                  type="number"
+                  id={field.id}
+                  class="w-full p-2 pl-8 border rounded-md cursor-pointer"
+                  placeholder="0.00"
+                  step="0.01"
+                  required={field.required}
+                  bind:value={formResponses[field.id]}
+                />
+              </div>
             {:else if field.type === 'multipleChoice'}
-              <div class="flex space-x-4">
+              <div class="flex flex-wrap gap-4">
                 {#each field.options || [] as option, i}
-                  <label class="inline-flex items-center">
+                  <label class="inline-flex items-center cursor-pointer">
                     <input
                       type="radio"
+                      id={`${field.id}_${i}`}
                       name={field.id}
                       value={option}
                       required={field.required}
                       bind:group={formResponses[field.id]}
-                      class="mr-2"
+                      class="mr-2 cursor-pointer"
                     />
                     <span>{option}</span>
                   </label>
                 {/each}
               </div>
             {:else if field.type === 'checkbox'}
-              <div class="flex space-x-4">
+              <div class="flex flex-wrap gap-4">
                 {#each field.options || [] as option, i}
-                  <label class="inline-flex items-center">
+                  <label class="inline-flex items-center cursor-pointer">
                     <input
                       type="checkbox"
+                      id={`${field.id}_${i}`}
                       value={option}
                       bind:group={formResponses[field.id]}
-                      class="mr-2"
+                      class="mr-2 cursor-pointer"
                     />
                     <span>{option}</span>
                   </label>
                 {/each}
               </div>
-            {:else if field.type === 'dropdown'}
+            {:else if field.type === 'region'}
               <select
-                class="w-full p-2 border rounded-md"
+                id={field.id}
+                class="w-full p-2 border rounded-md cursor-pointer"
+                required={field.required}
+                bind:value={formResponses[field.id]}
+                on:change={(e) => handleRegionChange(e, field.id)}
+              >
+                <option value="">Select Region</option>
+                {#each regions as region}
+                  <option value={region.name}>{region.name}</option>
+                {/each}
+              </select>
+            {:else if field.type === 'city'}
+              <select
+                id={field.id}
+                class="w-full p-2 border rounded-md cursor-pointer"
                 required={field.required}
                 bind:value={formResponses[field.id]}
               >
-                <option value="">Select an option</option>
-                {#each field.options || [] as option}
-                  <option value={option}>{option}</option>
+                <option value="">Select City/Municipality</option>
+                {#each field.options || [] as city}
+                  <option value={city}>{city}</option>
                 {/each}
               </select>
             {:else}
               <input
+                id={field.id}
                 type={field.type === 'shortText' ? 'text' :
                       field.type === 'email' ? 'email' :
-                      field.type === 'phone' ? 'tel' :
                       field.type === 'number' ? 'number' :
                       field.type === 'date' ? 'date' :
                       field.type === 'time' ? 'time' :
-                      field.type === 'file' ? 'file' :
-                      field.type === 'price' ? 'number' : 'text'}
-                class="w-full p-2 border rounded-md"
+                      field.type === 'file' ? 'file' : 'text'}
+                class="w-full p-2 border rounded-md cursor-pointer"
                 required={field.required}
                 bind:value={formResponses[field.id]}
-                step={field.type === 'price' ? '0.01' : undefined}
                 placeholder={field.description}
               />
             {/if}

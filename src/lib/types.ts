@@ -19,10 +19,12 @@ export interface FormFieldTypes {
     | 'multipleChoice'
     | 'checkbox'
     | 'dropdown'
-    | 'address'
     | 'file'
     | 'name'
-    | 'price';
+    | 'price'
+    | 'region'
+    | 'city'
+    | 'street';
   
   export interface FormData {
     title: string;

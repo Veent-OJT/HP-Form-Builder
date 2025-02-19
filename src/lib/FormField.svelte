@@ -129,9 +129,17 @@
             </div>
           {:else if field.type === 'price'}
             <div class="relative">
-              <span class="absolute left-3 top-2">$</span>
+              <span class="absolute left-3 top-2">₱</span>
               <input type="number" class="w-full p-2 pl-8 border rounded-md" placeholder="0.00" disabled />
             </div>
+          {:else if field.type === 'region'}
+            <select class="w-full p-2 border rounded-md" disabled>
+              <option>Select Region</option>
+            </select>
+          {:else if field.type === 'city'}
+            <select class="w-full p-2 border rounded-md" disabled>
+              <option>Select City/Municipality</option>
+            </select>
           {/if}
         </div>
       </div>
