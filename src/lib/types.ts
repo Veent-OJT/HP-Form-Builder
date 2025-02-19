@@ -6,9 +6,9 @@ export interface FormFieldTypes {
     options?: string[];
     description?: string;
     placeholder?: string;
-  }
-  
-  export type FieldType = 
+}
+
+export type FieldType =
     | 'shortText'
     | 'longText'
     | 'email'
@@ -25,9 +25,9 @@ export interface FormFieldTypes {
     | 'region'
     | 'city'
     | 'street';
-  
-  export interface FormData {
+
+export interface FormData {
     title: string;
     description: string;
     fields: FormFieldTypes[];
-  }
+}
